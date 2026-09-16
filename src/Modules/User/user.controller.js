@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getAllUsersService, getUserProfileService } from './user.service.js';
+import { deleteUserProfileService, getAllUsersService, getUserProfileService, updateUserProfileService } from './user.service.js';
 
 const userController = Router();
 
@@ -23,5 +23,24 @@ userController.get('/', async (req, res) => {
     }
 });
 
+// Update user profile by id
+userController.patch('/update/:userId', async (req, res) => {
+    try {
+        const updatedUser = await updateUserProfileService(req.params.userId, req.body);
+        res.status(200).json({ message: 'User profile updated successfully', data: updatedUser });
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+});
+
+// Delete user profile by id
+userController.delete('/delete/:userId', async (req, res) => {
+    try {
+        const deletedUser = await deleteUserProfileService(req.params.userId);
+        res.status(200).json({ message: 'User profile deleted successfully', data: deletedUser });
+    } catch (error) {
+        res.status(404).json({ message: error.message });
+    }
+});
 
 export default userController;
