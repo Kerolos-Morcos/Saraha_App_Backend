@@ -1,0 +1,27 @@
+{
+  "name": "sarahah_app_backend",
+  "version": "1.0.0",
+  "description": "Route Backend Project - Sarahah App",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "nodemon .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kerolos-Morcos/Saraha_App_Backend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/Kerolos-Morcos/Saraha_App_Backend/issues"
+  },
+  "homepage": "https://github.com/Kerolos-Morcos/Saraha_App_Backend#readme",
+  "dependencies": {
+    "argon2": "^0.45.1",
+    "express": "^5.2.1",
+    "mongoose": "^9.10.0"
+  }
+}
