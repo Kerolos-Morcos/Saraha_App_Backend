@@ -1,7 +1,5 @@
 import dotenv from 'dotenv';
 
-// undefined.env solve
-    
 dotenv.config({ path: [`.${process.env.NODE_ENV}.env`, '.env'] });
 
 const envConfig = {
