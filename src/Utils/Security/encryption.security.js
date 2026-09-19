@@ -1,8 +1,10 @@
 import crypto from "node:crypto";
+import envConfig from "../../Config/env.config.js";
 
+const enc_key = envConfig.encryption.ENCRYPTION_KEY;
 // function to encrypt
-const ENCRYPTION_KEY = Buffer.from('7f3a9c2e81d64b05f2a7e93c4d8b1a60e5f9472c3a1d8e6b9f0c5a27d4e8136b', 'hex');
-const IV_LENGTH = 16;
+const ENCRYPTION_KEY = Buffer.from(enc_key, 'hex');
+const IV_LENGTH = envConfig.encryption.IV_LENGTH;
 export const encrypt = (plainText) => {
     const iv = crypto.randomBytes(IV_LENGTH); // Buffer
     const cipher = crypto.createCipheriv('aes-256-cbc', ENCRYPTION_KEY, iv);

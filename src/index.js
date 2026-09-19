@@ -1,3 +1,5 @@
+import envConfig  from "./Config/env.config.js";
+// import "dotenv/config";
 import express from 'express';
 import authController from './Modules/Auth/auth.controller.js';
 import userController from './Modules/User/user.controller.js';
@@ -5,7 +7,7 @@ import messageController from './Modules/Message/message.controller.js';
 import { dbConnection } from './DB/db.connection.js';
 
 const app = express();
-const port = 5011;
+const port = envConfig.server.PORT || 5011;
 app.use(express.json());
 
 // DB Connection
