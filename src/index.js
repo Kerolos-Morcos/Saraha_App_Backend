@@ -5,6 +5,7 @@ import authController from './Modules/Auth/auth.controller.js';
 import userController from './Modules/User/user.controller.js';
 import messageController from './Modules/Message/message.controller.js';
 import { dbConnection } from './DB/db.connection.js';
+import { globalErrorHandler } from "./Middlewares/global-error-handler.middleware.js";
 
 const app = express();
 const port = envConfig.server.PORT || 5011;
@@ -20,15 +21,11 @@ app.use('/api/messages', messageController);
 
 // Not Found Middleware
 app.use((req, res) => {
-    res.status(404).json({ message: 'Route not found' });
+    res.status(err['cause'].status || 500).json({ message: 'Route not found' });
 });
 
 // Error Handling Middleware
-app.use((error, req, res, next) => {
-    return res.status(error.cause?.status || 500).json({
-        message: error.message
-    });
-});
+app.use(globalErrorHandler);
 
 // Starting the server
 app.listen(port, () => {
