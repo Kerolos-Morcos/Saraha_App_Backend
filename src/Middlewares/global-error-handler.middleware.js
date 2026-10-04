@@ -6,6 +6,7 @@ export const globalErrorHandler = (err, req, res, next) => {
         .json({
             message: err.message || "Internal server error",
             errorBody: err.data,
+            statusCode: err.statusCode,
             code: err.code
         });
 }

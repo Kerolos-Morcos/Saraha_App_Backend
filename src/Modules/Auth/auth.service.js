@@ -21,7 +21,6 @@ export const registerUserService = async (body) => {
     if (phoneNumber) encryptedPhoneNumber = encrypt(phoneNumber)
     // Hashing password before saving to the database
     const hashedPassword = await hashing(password);
-    // const user = await User.create({ firstName, lastName, email, password: hashedPassword, gender, age, phoneNumber: encryptedPhoneNumber || undefined });
     const user = await userRepo.createDocument({ firstName, lastName, email, password: hashedPassword, gender, age, phoneNumber: encryptedPhoneNumber || undefined });
     return user;
 }
@@ -34,8 +33,6 @@ export const loginUserService = async (body) => {
     if (!user) throw new Error('User not found');
     // Verify the password
     const isMatch = await verifying(user.password, password);
-    console.log(isMatch)
-    // if (!isMatch) throw new Error('Invalid email or password');
-    if (!isMatch) throw new BadRequestException("INVALID_EMAIL_OR_PASSWORD");
+    if (!isMatch) throw new BadRequestException("Bad Request", "Invalid email or password", "INVALID_CREDENTIALS");
     return user;
 } 
