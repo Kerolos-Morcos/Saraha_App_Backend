@@ -16,7 +16,7 @@ export const authenticate = async (req, res, next) => {
         throw new BadRequestException({ message: 'Invalid authorization format. Expected "Bearer <token>"' });
     }
 
-    const decodedToken = verifyToken(authorization, envConfig.jwt.ACCESS_TOKEN_SECRET);
+    const decodedToken = verifyToken(token, envConfig.jwt.ACCESS_TOKEN_SECRET);
     // Find User in DB
     const user = await userRepo.findDocumentById(decodedToken.id);
     if (!user) throw new BadRequestException({ message: 'User not found' });
