@@ -9,6 +9,13 @@ export const authenticate = async (req, res, next) => {
     if (!authorization) {
         throw new BadRequestException({ message: 'Authorization header is missing' });
     }
+
+    // Bearer token format check
+    const [prefix, token] = authorization.split(' ');
+    if (prefix !== 'Bearer' || !token) {
+        throw new BadRequestException({ message: 'Invalid authorization format. Expected "Bearer <token>"' });
+    }
+
     const decodedToken = verifyToken(authorization, envConfig.jwt.ACCESS_TOKEN_SECRET);
     // Find User in DB
     const user = await userRepo.findDocumentById(decodedToken.id);
