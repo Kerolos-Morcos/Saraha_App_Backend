@@ -12,6 +12,9 @@ const envConfig = {
     encryption: {
         ENCRYPTION_KEY: process.env.ENCRYPTION_KEY ?? "7f3a9c2e81d64b05f2a7e93c4d8b1a60e5f9472c3a1d8e6b9f0c5a27d4e8136b",
         IV_LENGTH: parseInt(process.env.IV_LENGTH) ?? 16,
+    },
+    jwt: {
+        ACCESS_TOKEN_SECRET: process.env.ACCESS_TOKEN_SECRET ?? "jwt_user_#access_$!)",
     }
 };
 

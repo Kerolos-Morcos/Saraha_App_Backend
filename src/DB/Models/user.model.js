@@ -35,6 +35,11 @@ const userSchema = new mongoose.Schema({
         default: "other"
     },
     phoneNumber: String,
+    role: {
+        type: String,
+        enum: ["user", "admin"],
+        default: "user"
+    },
 }, {
     // options object
     timestamps: true,

@@ -2,16 +2,14 @@
 import { isValidObjectId } from "mongoose";
 import { decrypt } from "../../Utils/Security/encryption.security.js";
 import UserRepository from "../../DB/Repositories/user.repository.js";
+import envConfig from "../../Config/env.config.js";
+import { verifyToken } from "../../Utils/token.utils.js";
 
 // Repo
 const userRepo = new UserRepository();
 
 // GET user profile by id
-export const getUserProfileService = async (userId) => {
-    if (!isValidObjectId(userId)) throw new Error('Invalid user ID');
-    // const user = await User.findById(userId);
-    const user = await userRepo.findDocumentById(userId);
-    if (!user) throw new Error('User not found');
+export const getUserProfileService = async (user) => {
     // Decrypt the phone number before returning the user object
     if (user.phoneNumber)
         user.phoneNumber = decrypt(user.phoneNumber);
@@ -48,11 +46,6 @@ export const getAllUsersService = async () => {
 export const updateUserProfileService = async (userId, body) => {
     const { firstName, lastName, email, age, gender, phoneNumber } = body;
     if (!isValidObjectId(userId)) throw new Error('Invalid user ID');
-    // const updatedUser = await User.findByIdAndUpdate(
-    //     userId,
-    //     { firstName, lastName, email, age, gender, phoneNumber },
-    //     { new: true, runValidators: true }
-    // );
     const updatedUser = await userRepo.findByIdAndUpdateDocument(userId, { firstName, lastName, email, age, gender, phoneNumber }, { new: true, runValidators: true });
     if (!updatedUser) throw new Error('User not found');
     return updatedUser;
@@ -61,7 +54,6 @@ export const updateUserProfileService = async (userId, body) => {
 // Delete user profile by id
 export const deleteUserProfileService = async (userId) => {
     if (!isValidObjectId(userId)) throw new Error('Invalid user ID');
-    // const deletedUser = await User.findByIdAndDelete(userId);
     const deletedUser = await userRepo.findByIdAndDeleteDocument(userId);
     if (!deletedUser) throw new Error('User not found');
     return deletedUser;

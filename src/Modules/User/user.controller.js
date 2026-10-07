@@ -1,13 +1,17 @@
 import { Router } from 'express';
 import { deleteUserProfileService, getAllUsersService, getUserProfileService, updateUserProfileService } from './user.service.js';
+import { authenticate } from '../../Middlewares/authentication.middleware.js';
 
 const userController = Router();
 
 // GET user profile by id
-userController.get('/profile/:userId', async (req, res) => {
+userController.get('/profile', authenticate, async (req, res) => {
     try {
-        const user = await getUserProfileService(req.params.userId);
-        res.status(200).json({ message: 'User profile retrieved successfully', data: user });
+        const user = await getUserProfileService(req.authUser);
+        res.status(200).json({
+            message: 'User profile retrieved successfully',
+            data: user
+        });
     } catch (error) {
         res.status(404).json({ message: error.message });
     }
@@ -24,9 +28,9 @@ userController.get('/', async (req, res) => {
 });
 
 // Update user profile by id
-userController.patch('/update/:userId', async (req, res) => {
+userController.patch('/update', authenticate, async (req, res) => {
     try {
-        const updatedUser = await updateUserProfileService(req.params.userId, req.body);
+        const updatedUser = await updateUserProfileService(req.authUser._id, req.body);
         res.status(200).json({ message: 'User profile updated successfully', data: updatedUser });
     } catch (error) {
         res.status(404).json({ message: error.message });
@@ -34,9 +38,9 @@ userController.patch('/update/:userId', async (req, res) => {
 });
 
 // Delete user profile by id
-userController.delete('/delete/:userId', async (req, res) => {
+userController.delete('/delete', authenticate, async (req, res) => {
     try {
-        const deletedUser = await deleteUserProfileService(req.params.userId);
+        const deletedUser = await deleteUserProfileService(req.authUser._id);
         res.status(200).json({ message: 'User profile deleted successfully', data: deletedUser });
     } catch (error) {
         res.status(404).json({ message: error.message });
