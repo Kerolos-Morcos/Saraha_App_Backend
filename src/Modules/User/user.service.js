@@ -15,12 +15,7 @@ export const getUserProfileService = async (user) => {
 
 // GET all users
 export const getAllUsersService = async () => {
-    // return User.find()
-    //     .select('firstName lastName')
-    //     .sort({ firstName: -1 }) // descending order
-    //     .limit(2)
-    //     .skip(1);
-    return userRepo.findAllUserDocuments();
+  return userRepo.findAllUserDocuments();
 }
 
 // Update user profile by id using save
