@@ -1,9 +1,6 @@
-// import User from "../../DB/Models/user.model.js";
 import { isValidObjectId } from "mongoose";
 import { decrypt } from "../../Utils/Security/encryption.security.js";
 import UserRepository from "../../DB/Repositories/user.repository.js";
-import envConfig from "../../Config/env.config.js";
-import { verifyToken } from "../../Utils/token.utils.js";
 
 // Repo
 const userRepo = new UserRepository();

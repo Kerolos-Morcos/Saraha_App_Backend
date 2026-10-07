@@ -25,7 +25,6 @@ export const registerUserService = async (body) => {
 // Login User Service
 export const loginUserService = async (body) => {
     const { email, password } = body;
-    // const user = await User.findOne({ email });
     const user = await userRepo.findUserByEmail(email);
     if (!user) throw new Error('User not found');
     // Verify the password
