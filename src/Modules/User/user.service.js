@@ -1,5 +1,5 @@
 import { isValidObjectId } from "mongoose";
-import { decrypt } from "../../Utils/Security/encryption.security.js";
+import { decrypt } from "../../Common/Utils/Security/encryption.security.js";
 import UserRepository from "../../DB/Repositories/user.repository.js";
 
 // Repo

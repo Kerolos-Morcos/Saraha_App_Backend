@@ -1,12 +1,15 @@
 import UserRepository from "../../DB/Repositories/user.repository.js";
-import { BadRequestException, ConflictException } from "../../Utils/Errors/exception.error.js";
-import { encrypt } from "../../Utils/Security/encryption.security.js";
-import { hashing, verifying } from "../../Utils/Security/hash.security.js";
 import envConfig from "../../Config/env.config.js";
-import { generateToken } from "../../Utils/token.utils.js";
+import { BadRequestException, ConflictException } from "../../Common/Utils/Errors/exception.error.js";
+import { encrypt } from "../../Common/Utils/Security/encryption.security.js";
+import { hashing, verifying } from "../../Common/Utils/Security/hash.security.js";
+import { decodeToken, generateToken, getRoleTokenConfig } from "../../Common/Utils/token.utils.js";
+import { tokenTypeEnum } from "../../Common/constants.js";
 
 // Repo
 const userRepo = new UserRepository();
+
+// const { user: userEnvConfig, admin: adminEnvConfig } = envConfig.jwt;
 
 // Register User Service
 export const registerUserService = async (body) => {
@@ -31,8 +34,26 @@ export const loginUserService = async (body) => {
     const isMatch = await verifying(user.password, password);
     if (!isMatch) throw new BadRequestException("Bad Request", "Invalid email or password", "INVALID_CREDENTIALS");
 
-    // Generate JWT Token
-    const accessToken = generateToken({ id: user._id, email: user.email, role: user.role }, envConfig.jwt.ACCESS_TOKEN_SECRET, { expiresIn: "1h" });
+    // Check if the user role is valid
+    const roleConfig = getRoleTokenConfig(user.role);
+    if (!roleConfig) throw new BadRequestException("Invalid user role");
 
-    return { user, accessToken };
-} 
+    // Generate JWT Access Token
+    const accessToken = generateToken({ id: user._id, email: user.email, role: user.role }, roleConfig.ACCESS_TOKEN_SECRET, { expiresIn: roleConfig.ACCESS_TOKEN_EXPIRATION_TIME });
+
+    // Generate JWT Refresh Token
+    const refreshToken = generateToken({ id: user._id, email: user.email, role: user.role }, roleConfig.REFRESH_TOKEN_SECRET, { expiresIn: roleConfig.REFRESH_TOKEN_EXPIRATION_TIME });
+
+    return { user, accessToken, refreshToken };
+}
+
+// Refresh Token Service
+export const refreshTokenService = async (userRefreshToken) => {
+    const user = await decodeToken({ token: userRefreshToken, tokenType: tokenTypeEnum.REFRESH_TOKEN });
+    
+    const roleConfig = getRoleTokenConfig(user.role);
+    // Generate JWT Access Token
+    const accessToken = generateToken({ id: user.id, email: user.email, role: user.role }, roleConfig.ACCESS_TOKEN_SECRET, { expiresIn: roleConfig.ACCESS_TOKEN_EXPIRATION_TIME });
+
+    return { message: 'Access token refreshed successfully', accessToken };
+}

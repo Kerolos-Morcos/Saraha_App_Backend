@@ -1,11 +1,13 @@
 import { Router } from 'express';
 import { deleteUserProfileService, getAllUsersService, getUserProfileService, updateUserProfileService } from './user.service.js';
 import { authenticate } from '../../Middlewares/authentication.middleware.js';
+import { authorize } from '../../Middlewares/authorization.middleware.js';
+import { roleEnum } from '../../Common/constants.js';
 
 const userController = Router();
 
 // GET user profile by id
-userController.get('/profile', authenticate, async (req, res) => {
+userController.get('/profile', authenticate, authorize([roleEnum.USER]), async (req, res) => {
     try {
         const user = await getUserProfileService(req.authUser);
         res.status(200).json({
@@ -18,7 +20,7 @@ userController.get('/profile', authenticate, async (req, res) => {
 });
 
 // GET all users
-userController.get('/', async (req, res) => {
+userController.get('/', authenticate, authorize([roleEnum.ADMIN]), async (req, res) => {
     try {
         const users = await getAllUsersService();
         res.status(200).json({ message: 'All users retrieved successfully', data: users });
@@ -28,7 +30,7 @@ userController.get('/', async (req, res) => {
 });
 
 // Update user profile by id
-userController.patch('/update', authenticate, async (req, res) => {
+userController.patch('/update', authenticate, authorize([roleEnum.USER, roleEnum.ADMIN]), async (req, res) => {
     try {
         const updatedUser = await updateUserProfileService(req.authUser._id, req.body);
         res.status(200).json({ message: 'User profile updated successfully', data: updatedUser });
@@ -38,7 +40,7 @@ userController.patch('/update', authenticate, async (req, res) => {
 });
 
 // Delete user profile by id
-userController.delete('/delete', authenticate, async (req, res) => {
+userController.delete('/delete', authenticate, authorize([roleEnum.ADMIN]), async (req, res) => {
     try {
         const deletedUser = await deleteUserProfileService(req.authUser._id);
         res.status(200).json({ message: 'User profile deleted successfully', data: deletedUser });

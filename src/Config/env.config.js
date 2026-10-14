@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 
-dotenv.config({ path: [`.${process.env.NODE_ENV}.env`, '.env'] });
+// dotenv.config({ path: [`.${process.env.NODE_ENV}.env`, '.env'] });
+dotenv.config({ path: '.env' });
 
 const envConfig = {
     database: {
@@ -11,10 +12,21 @@ const envConfig = {
     },
     encryption: {
         ENCRYPTION_KEY: process.env.ENCRYPTION_KEY ?? "7f3a9c2e81d64b05f2a7e93c4d8b1a60e5f9472c3a1d8e6b9f0c5a27d4e8136b",
-        IV_LENGTH: parseInt(process.env.IV_LENGTH) ?? 16,
+        IV_LENGTH: parseInt(process.env.IV_LENGTH ?? "16", 10),
     },
     jwt: {
-        ACCESS_TOKEN_SECRET: process.env.ACCESS_TOKEN_SECRET ?? "jwt_user_#access_$!)",
+        user: {
+            ACCESS_TOKEN_SECRET: process.env.USER_ACCESS_TOKEN_SECRET,
+            ACCESS_TOKEN_EXPIRATION_TIME: process.env.USER_ACCESS_TOKEN_EXPIRATION_TIME,
+            REFRESH_TOKEN_SECRET: process.env.USER_REFRESH_TOKEN_SECRET,
+            REFRESH_TOKEN_EXPIRATION_TIME: process.env.USER_REFRESH_TOKEN_EXPIRATION_TIME,
+        },
+        admin: {
+            ACCESS_TOKEN_SECRET: process.env.ADMIN_ACCESS_TOKEN_SECRET,
+            ACCESS_TOKEN_EXPIRATION_TIME: process.env.ADMIN_ACCESS_TOKEN_EXPIRATION_TIME,
+            REFRESH_TOKEN_SECRET: process.env.ADMIN_REFRESH_TOKEN_SECRET,
+            REFRESH_TOKEN_EXPIRATION_TIME: process.env.ADMIN_REFRESH_TOKEN_EXPIRATION_TIME,
+        }
     }
 };
 

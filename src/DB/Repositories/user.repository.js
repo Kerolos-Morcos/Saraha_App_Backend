@@ -13,6 +13,7 @@ export default class UserRepository extends BaseRepository {
 
     findAllUserDocuments(filters = {}) {
         // return this.findAllDocuments(filters);
-        return this.findAllDocuments(filters).select('firstName lastName').sort({ firstName: -1 }).limit(2).skip(1);
+        // return this.findAllDocuments(filters).select('firstName lastName').sort({ firstName: -1 }).limit(2).skip(1);
+        return this.findAllDocuments(filters).select('firstName lastName email role age').sort({ firstName: -1 });
     }
 }

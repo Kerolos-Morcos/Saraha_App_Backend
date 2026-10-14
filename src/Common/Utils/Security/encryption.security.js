@@ -1,5 +1,5 @@
 import crypto from "node:crypto";
-import envConfig from "../../Config/env.config.js";
+import envConfig from "../../../Config/env.config.js";
 
 const enc_key = envConfig.encryption.ENCRYPTION_KEY;
 // function to encrypt
