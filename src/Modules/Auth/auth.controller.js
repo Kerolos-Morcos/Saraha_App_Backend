@@ -1,8 +1,10 @@
 import { Router } from 'express';
-import { registerUserService, loginUserService, refreshTokenService, googleLoginService, googleRegisterService } from './auth.service.js';
+import { registerUserService, loginUserService, refreshTokenService, googleLoginService, googleRegisterService, logoutUserService } from './auth.service.js';
 import { loginSchema, registerSchema } from './auth.validation.js';
 import { validation } from '../../Middlewares/validation.middleware.js';
 import { BadRequestException } from '../../Common/Utils/Errors/exception.error.js';
+import { authenticate } from '../../Middlewares/authentication.middleware.js';
+import { decodeRefreshToken } from '../../Middlewares/decodeRefreshToken.middleware.js';
 
 const authController = Router();
 
@@ -41,6 +43,12 @@ authController.post('/google-register', async (req, res) => {
     if (!idToken) throw new BadRequestException({ message: 'ID token is missing' });
     const result = await googleRegisterService(idToken);
     res.status(201).json({ message: 'Google register successful', data: result });
+});
+
+// Logout Route
+authController.post('/logout', authenticate, decodeRefreshToken, async (req, res) => {
+    const result = await logoutUserService(req.accessTokenData, req.refreshTokenData);
+    res.status(200).json({ message: 'User logged out successfully', data: result });
 });
 
 export default authController;

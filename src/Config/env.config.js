@@ -31,6 +31,9 @@ const envConfig = {
     },
     google: {
         GCP_CLIENT_ID: process.env.GCP_CLIENT_ID,
+    },
+    redis: {
+        URI: process.env.REDIS_CLOUD_URI,
     }
 
 };

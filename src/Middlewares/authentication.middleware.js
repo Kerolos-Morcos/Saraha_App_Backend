@@ -14,8 +14,9 @@ export const authenticate = async (req, res, next) => {
         throw new BadRequestException({ message: 'Invalid authorization format. Expected "Bearer <token>"' });
     }
 
-    const user = await decodeToken({ token, tokenType: tokenTypeEnum.ACCESS_TOKEN });
+    const { user, tokenData } = await decodeToken({ token, tokenType: tokenTypeEnum.ACCESS_TOKEN });
     req.authUser = user;
+    req.accessTokenData = tokenData;
 
     next();
 }

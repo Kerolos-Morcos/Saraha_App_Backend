@@ -3,9 +3,10 @@ import envConfig from "../../Config/env.config.js";
 import { BadRequestException, ConflictException } from "../../Common/Utils/Errors/exception.error.js";
 import { encrypt } from "../../Common/Utils/Security/encryption.security.js";
 import { hashing, verifying } from "../../Common/Utils/Security/hash.security.js";
-import { decodeToken, generateRoleToken } from "../../Common/Utils/token.utils.js";
+import { decodeToken, generateToken } from "../../Common/Utils/token.utils.js";
 import { providersEnum, tokenTypeEnum } from "../../Common/constants.js";
 import { OAuth2Client } from "google-auth-library";
+import { calculateTTL, set } from "../../Common/Services/redis.service.js";
 
 // Repo
 const userRepo = new UserRepository();
@@ -14,8 +15,8 @@ const userRepo = new UserRepository();
 const buildTokens = (user) => {
     const tokenPayload = { id: user._id, email: user.email, role: user.role };
     const role = user.role;
-    const accessToken = generateRoleToken(tokenPayload, role, tokenTypeEnum.ACCESS_TOKEN);
-    const refreshToken = generateRoleToken(tokenPayload, role, tokenTypeEnum.REFRESH_TOKEN);
+    const accessToken = generateToken(tokenPayload, role, tokenTypeEnum.ACCESS_TOKEN);
+    const refreshToken = generateToken(tokenPayload, role, tokenTypeEnum.REFRESH_TOKEN);
 
     return { accessToken, refreshToken };
 }
@@ -49,10 +50,10 @@ export const loginUserService = async (body) => {
 
 // Refresh Token Service
 export const refreshTokenService = async (userRefreshToken) => {
-    const user = await decodeToken({ token: userRefreshToken, tokenType: tokenTypeEnum.REFRESH_TOKEN });
+    const { user } = await decodeToken({ token: userRefreshToken, tokenType: tokenTypeEnum.REFRESH_TOKEN });
     // const { accessToken } = buildTokens(user);
     const tokenPayload = { id: user._id, email: user.email, role: user.role };
-    const accessToken = generateRoleToken(tokenPayload, user.role, tokenTypeEnum.ACCESS_TOKEN);
+    const accessToken = generateToken(tokenPayload, user.role, tokenTypeEnum.ACCESS_TOKEN);
     return { message: 'Access token refreshed successfully', accessToken };
 }
 
@@ -100,4 +101,23 @@ export const googleLoginService = async (idToken) => {
     const { accessToken, refreshToken } = buildTokens(user);
 
     return { message: 'Google login successful', data: user, accessToken, refreshToken };
+}
+
+// Logout User Service
+export const logoutUserService = async (accessTokenData, refreshTokenData) => {
+    const { exp: accessExpiration, jti: accessId } = accessTokenData;
+    const { exp: refreshExpiration, jti: refreshId } = refreshTokenData;
+    // Calculating TTL
+    const accessTTL = calculateTTL(accessExpiration);
+    const refreshTTL = calculateTTL(refreshExpiration);
+    if (accessTTL <= 0 || refreshTTL <= 0) {
+        throw new BadRequestException({
+            message: 'Token has already expired'
+        });
+    }
+    await Promise.all([
+        set(`bl_${tokenTypeEnum.ACCESS_TOKEN}_${accessId}`, 'true', { EX: accessTTL }),
+        set(`bl_${tokenTypeEnum.REFRESH_TOKEN}_${refreshId}`, 'true', { EX: refreshTTL }),
+    ])
+    return { accessTTL, refreshTTL };
 }

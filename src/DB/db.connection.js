@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
-import envConfig from '../Config/env.config.js';
+import { dbConfig } from '../Config/db.config.js';
 
 export const dbConnection = async () => {
     try {
-        await mongoose.connect(envConfig.database.DB_URI_LOCAL);
+        await mongoose.connect(dbConfig);
         console.log('Connected to MongoDB successfully!');
     } catch (error) {
         console.error('Error connecting to MongoDB:', error);

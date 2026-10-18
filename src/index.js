@@ -7,14 +7,16 @@ import messageController from './Modules/Message/message.controller.js';
 import { dbConnection } from './DB/db.connection.js';
 import { globalErrorHandler } from "./Middlewares/global-error-handler.middleware.js";
 import cors from 'cors';
+import { redisConnection } from "./Common/Clients/redis.client.js";
 
 const app = express();
 const port = envConfig.server.PORT || 5011;
 const whitelist = envConfig.server.CORS_WHITELIST.split(",").map(origin => origin.trim());
 app.use(cors({ origin: whitelist }), express.json());
 
-// DB Connection
+// DB Connection - Redis Connection
 dbConnection();
+redisConnection();
 
 // Routes
 app.use('/api/auth', authController);
