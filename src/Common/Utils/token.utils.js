@@ -12,6 +12,17 @@ export const generateToken = (payload, secret, options) => {
     return jwt.sign(payload, secret, options);
 }
 
+// Generate Role Token
+export const generateRoleToken = (payload, role, tokenType) => {
+    const { secret, expiresIn } = getTokenConfig(role, tokenType);
+
+    if (!secret || !expiresIn) {
+        throw new Error("JWT configuration is missing");
+    }
+
+    return generateToken(payload, secret, { expiresIn });
+};
+
 export const verifyToken = (token, secret) => {
     return jwt.verify(token, secret);
 }
@@ -22,11 +33,13 @@ export const decodeToken = async ({ token, tokenType }) => {
     const data = getDecodedToken(token);
 
     // Get the appropriate signature based on the token type
-    const signature = getTokenSignature(data.role, tokenType)
-    if (!signature) throw new BadRequestException({ message: `Invalid role: ${data.role}` });
+    const { secret } = getTokenConfig(data.role, tokenType);
 
-    // Verify Token
-    const verifiedToken = verifyToken(token, signature);
+    if (!secret) {
+        throw new Error("JWT secret is missing");
+    }
+
+    const verifiedToken = verifyToken(token, secret);
 
     // Find User in DB
     const user = await userRepo.findDocumentById(verifiedToken.id);
@@ -38,7 +51,10 @@ export const decodeToken = async ({ token, tokenType }) => {
 // Get Decoded Token
 const getDecodedToken = (token) => {
     const data = jwt.decode(token);
-    if (!data || !data.role) throw new BadRequestException("Invalid token payload");
+
+    if (!data || !data.role) {
+        throw new BadRequestException("Invalid token payload");
+    }
 
     return data;
 };
@@ -52,13 +68,22 @@ export const getRoleTokenConfig = (role) => {
 };
 
 // Get Token Signature based on role and token type
-const getTokenSignature = (role, tokenType) => {
+export const getTokenConfig = (role, tokenType) => {
     const roleConfig = getRoleTokenConfig(role);
+
     switch (tokenType) {
         case tokenTypeEnum.ACCESS_TOKEN:
-            return roleConfig.ACCESS_TOKEN_SECRET;
+            return {
+                secret: roleConfig.ACCESS_TOKEN_SECRET,
+                expiresIn: roleConfig.ACCESS_TOKEN_EXPIRATION_TIME
+            };
+
         case tokenTypeEnum.REFRESH_TOKEN:
-            return roleConfig.REFRESH_TOKEN_SECRET;
+            return {
+                secret: roleConfig.REFRESH_TOKEN_SECRET,
+                expiresIn: roleConfig.REFRESH_TOKEN_EXPIRATION_TIME
+            };
+
         default:
             throw new BadRequestException("Invalid token type");
     }

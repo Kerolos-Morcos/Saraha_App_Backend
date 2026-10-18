@@ -9,6 +9,7 @@ const envConfig = {
     },
     server: {
         PORT: process.env.PORT ?? 5011,
+        CORS_WHITELIST: process.env.CORS_WHITELIST,
     },
     encryption: {
         ENCRYPTION_KEY: process.env.ENCRYPTION_KEY ?? "7f3a9c2e81d64b05f2a7e93c4d8b1a60e5f9472c3a1d8e6b9f0c5a27d4e8136b",
@@ -27,7 +28,11 @@ const envConfig = {
             REFRESH_TOKEN_SECRET: process.env.ADMIN_REFRESH_TOKEN_SECRET,
             REFRESH_TOKEN_EXPIRATION_TIME: process.env.ADMIN_REFRESH_TOKEN_EXPIRATION_TIME,
         }
+    },
+    google: {
+        GCP_CLIENT_ID: process.env.GCP_CLIENT_ID,
     }
+
 };
 
 export default envConfig;

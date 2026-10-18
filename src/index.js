@@ -1,4 +1,4 @@
-import envConfig  from "./Config/env.config.js";
+import envConfig from "./Config/env.config.js";
 // import "dotenv/config";
 import express from 'express';
 import authController from './Modules/Auth/auth.controller.js';
@@ -6,10 +6,12 @@ import userController from './Modules/User/user.controller.js';
 import messageController from './Modules/Message/message.controller.js';
 import { dbConnection } from './DB/db.connection.js';
 import { globalErrorHandler } from "./Middlewares/global-error-handler.middleware.js";
+import cors from 'cors';
 
 const app = express();
 const port = envConfig.server.PORT || 5011;
-app.use(express.json());
+const whitelist = envConfig.server.CORS_WHITELIST.split(",").map(origin => origin.trim());
+app.use(cors({ origin: whitelist }), express.json());
 
 // DB Connection
 dbConnection();

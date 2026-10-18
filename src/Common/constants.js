@@ -15,4 +15,9 @@ const tokenTypeEnum = {
     REFRESH_TOKEN: 'refresh_token'
 }
 
-export { genderEnum, roleEnum, tokenTypeEnum }
+const providersEnum = {
+    SYSTEM: 'system',
+    GOOGLE: 'google'
+}
+
+export { genderEnum, roleEnum, tokenTypeEnum, providersEnum }
