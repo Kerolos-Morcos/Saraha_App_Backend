@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { registerUserService, loginUserService, refreshTokenService, googleLoginService, googleRegisterService, logoutUserService } from './auth.service.js';
+import { registerUserService, loginUserService, refreshTokenService, googleLoginService, googleRegisterService, logoutUserService, confirmEmailService } from './auth.service.js';
 import { loginSchema, registerSchema } from './auth.validation.js';
 import { validation } from '../../Middlewares/validation.middleware.js';
 import { BadRequestException } from '../../Common/Utils/Errors/exception.error.js';
@@ -49,6 +49,14 @@ authController.post('/google-register', async (req, res) => {
 authController.post('/logout', authenticate, decodeRefreshToken, async (req, res) => {
     const result = await logoutUserService(req.accessTokenData, req.refreshTokenData);
     res.status(200).json({ message: 'User logged out successfully', data: result });
+});
+
+// Confirm Email Route
+authController.patch('/confirm-email', async (req, res) => {
+    const { email, otp } = req.body;
+    if (!email || !otp) throw new BadRequestException({ message: 'Email or OTP is missing' });
+    const result = await confirmEmailService(email, otp.toString());
+    res.status(200).json({ message: 'Email confirmed successfully', data: result });
 });
 
 export default authController;

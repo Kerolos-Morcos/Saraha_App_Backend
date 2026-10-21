@@ -20,4 +20,6 @@ const providersEnum = {
     GOOGLE: 'google'
 }
 
-export { genderEnum, roleEnum, tokenTypeEnum, providersEnum }
+const OTPExpirationTime = 300;
+
+export { genderEnum, roleEnum, tokenTypeEnum, providersEnum, OTPExpirationTime };

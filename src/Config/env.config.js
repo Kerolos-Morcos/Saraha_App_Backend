@@ -34,6 +34,10 @@ const envConfig = {
     },
     redis: {
         URI: process.env.REDIS_CLOUD_URI,
+    },
+    email: {
+        EMAIL_USERNAME: process.env.EMAIL_USERNAME,
+        EMAIL_PASSWORD: process.env.EMAIL_PASSWORD,
     }
 
 };

@@ -51,6 +51,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: Object.values(providersEnum),
         default: providersEnum.SYSTEM
+    },
+    isEmailVerified: {
+        type: Boolean,
+        default: false
     }
 }, {
     // options object

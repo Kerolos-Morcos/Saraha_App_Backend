@@ -38,6 +38,6 @@ export const close = async () => {
 // Calculating TTL
 export const calculateTTL = (expiration) => {
     // expiration - currentTime
-    const currentTime = Math.floor(Date.now() / 1000);
+    const currentTime = Math.floor(Date.now() / 1000); // in seconds
     return expiration - currentTime;
 }

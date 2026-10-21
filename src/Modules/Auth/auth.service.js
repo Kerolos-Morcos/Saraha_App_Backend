@@ -6,7 +6,8 @@ import { hashing, verifying } from "../../Common/Utils/Security/hash.security.js
 import { decodeToken, generateToken } from "../../Common/Utils/token.utils.js";
 import { providersEnum, tokenTypeEnum } from "../../Common/constants.js";
 import { OAuth2Client } from "google-auth-library";
-import { calculateTTL, set } from "../../Common/Services/redis.service.js";
+import { calculateTTL, del, get, set } from "../../Common/Services/redis.service.js";
+import { handlingOTP } from "../../Common/Utils/otp.utils.js";
 
 // Repo
 const userRepo = new UserRepository();
@@ -31,6 +32,10 @@ export const registerUserService = async (body) => {
     if (phoneNumber) encryptedPhoneNumber = encrypt(phoneNumber)
     // Hashing password before saving to the database
     const hashedPassword = await hashing(password);
+
+    // Handle OTP: Creating OTP, hashing it and storing it in redis
+    await handlingOTP(email, firstName);
+
     const user = await userRepo.createDocument({ firstName, lastName, email, password: hashedPassword, gender, age, phoneNumber: encryptedPhoneNumber || undefined });
     return user;
 }
@@ -120,4 +125,18 @@ export const logoutUserService = async (accessTokenData, refreshTokenData) => {
         set(`bl_${tokenTypeEnum.REFRESH_TOKEN}_${refreshId}`, 'true', { EX: refreshTTL }),
     ])
     return { accessTTL, refreshTTL };
+}
+
+// Confirm Email Service
+export const confirmEmailService = async (email, otp) => {
+    // Get Hashed Value From Redis
+    const hashedOTP = await get(`email_verification_${email}`);
+    if (!hashedOTP) throw new BadRequestException({ message: 'OTP has expired or already used' });
+    // Compare Hashed Value with the one sent to the user
+    const isMatch = await verifying(hashedOTP, otp.toString());
+    if (!isMatch) throw new BadRequestException({ message: 'Invalid OTP' });
+    // Update DB
+    await userRepo.findAndUpdateDocument({ email }, { isEmailVerified: true });
+    // Delete Hashed Value From Redis
+    await del(`email_verification_${email}`);
 }
