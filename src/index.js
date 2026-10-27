@@ -24,10 +24,11 @@ redisConnection();
 app.use('/api/auth', authController);
 app.use('/api/users', userController);
 app.use('/api/messages', messageController);
+app.use('/uploads', express.static('uploads')); // For Static Files & Images
 
 // Not Found Middleware
 app.use((req, res) => {
-    res.status(err['cause'].status || 500).json({ message: 'Route not found' });
+    res.status(404).json({ message: 'Route not found' });
 });
 
 // Error Handling Middleware

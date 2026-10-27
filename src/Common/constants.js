@@ -22,4 +22,11 @@ const providersEnum = {
 
 const OTPExpirationTime = 300;
 
-export { genderEnum, roleEnum, tokenTypeEnum, providersEnum, OTPExpirationTime };
+const allowedExtensions = {
+ image: ['png', 'jpeg'],
+ video: ['mp4'],
+ application: ['xlsx', 'pdf']
+}
+
+
+export { genderEnum, roleEnum, tokenTypeEnum, providersEnum, OTPExpirationTime, allowedExtensions };

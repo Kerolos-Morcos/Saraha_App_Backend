@@ -55,6 +55,10 @@ const userSchema = new mongoose.Schema({
     isEmailVerified: {
         type: Boolean,
         default: false
+    },
+    profileImage: {
+        type: String,
+        default: null
     }
 }, {
     // options object

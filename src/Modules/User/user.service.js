@@ -15,7 +15,7 @@ export const getUserProfileService = async (user) => {
 
 // GET all users
 export const getAllUsersService = async () => {
-  return userRepo.findAllUserDocuments();
+    return userRepo.findAllUserDocuments();
 }
 
 // Update user profile by id using save
@@ -49,4 +49,9 @@ export const deleteUserProfileService = async (userId) => {
     const deletedUser = await userRepo.findByIdAndDeleteDocument(userId);
     if (!deletedUser) throw new Error('User not found');
     return deletedUser;
+}
+
+// Upload Profile Picture
+export const uploadProfilePictureService = async (file, user) => {
+    return userRepo.findByIdAndUpdateDocument(user._id, { profileImage: file.path }, { new: true });
 }
