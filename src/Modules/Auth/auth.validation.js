@@ -1,9 +1,12 @@
 import { z } from 'zod';
 
-export const loginSchema = z.strictObject({
+export const emailSchema = z.strictObject({
     email: z.email({ error: "Invalid Email Format" }),
-    password: z.string().regex(/^(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/),
     lang: z.enum(['en', 'ar']).default('en').optional() //params
+});
+
+export const loginSchema = emailSchema.extend({
+    password: z.string().regex(/^(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/),
 });
 
 export const registerSchema = loginSchema.extend({
@@ -20,6 +23,24 @@ export const registerSchema = loginSchema.extend({
         path: ['confirmPassword']
     }
 );
+
+export const confirmEmailSchema = emailSchema.extend({
+    otp: z.coerce.string().regex(/^\d{6}$/, {
+        error: "OTP must contain exactly 6 digits"
+    })
+});
+
+export const resetPasswordSchema = confirmEmailSchema.extend({
+    password: z.string().regex(/^(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/),
+    confirmPassword: z.string()
+}).refine(
+    (data) => data.password === data.confirmPassword,
+    {
+        message: 'Passwords do not match',
+        path: ['confirmPassword']
+    }
+)
+
 // To Use SuperRefine For Multiple Validation Issues
 // .superRefine(
 //     (data, ctx) => {

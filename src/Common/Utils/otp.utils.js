@@ -6,17 +6,17 @@ import { OTPExpirationTime } from '../constants.js';
 
 export const generateOTP = () => crypto.randomInt(100000, 1000000).toString();
 
-export async function handlingOTP(email, firstName) {
+export async function handlingOTP(email, firstName, purpose = 'email_verification') {
     // Generate OTP
     const otp = generateOTP();
     // Hash OTP
     const hashedOTP = await hashing(otp);
+    // Set OTP in Redis
+    await set(`${purpose}_${email}`, hashedOTP, { EX: OTPExpirationTime });
     // Sending Email Verification
     eventEmitter.emit("sendMailEvent", {
         to: email,
         firstName,
         otp
     });
-    // Set OTP in Redis
-    await set(`email_verification_${email}`, hashedOTP, { EX: OTPExpirationTime });
 }

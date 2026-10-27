@@ -140,3 +140,43 @@ export const confirmEmailService = async (email, otp) => {
     // Delete Hashed Value From Redis
     await del(`email_verification_${email}`);
 }
+
+// Resend OTP Service
+export const resendOTPService = async (email) => {
+    const user = await userRepo.findUserByEmail(email);
+    if (!user || user.isEmailVerified) throw new BadRequestException({ message: 'User not found or already verified' });
+    await handlingOTP(email, user.firstName);
+
+    return { message: 'OTP sent successfully' };
+};
+
+// Forgot Password Service (For System Users Only)
+export const forgotPasswordService = async (email) => {
+    const user = await userRepo.findOneDocument({
+        email,
+        provider: providersEnum.SYSTEM
+    });
+    if (!user) throw new BadRequestException({ message: 'User not found' });
+    await handlingOTP(email, user.firstName, 'forgot_password');
+
+    return { message: 'OTP sent successfully' };
+};
+
+// Reset Password Service
+export const resetPasswordService = async (body) => {
+    const { email, otp, password } = body;
+    const user = await userRepo.findOneDocument({
+        email,
+        provider: providersEnum.SYSTEM
+    });
+    if (!user) throw new BadRequestException({ message: 'User not found' });
+    const hashedOTP = await get(`forgot_password_${email}`);
+    if (!hashedOTP) throw new BadRequestException({ message: 'OTP has expired or already used' });
+    const isMatch = await verifying(hashedOTP, otp.toString());
+    if (!isMatch) throw new BadRequestException({ message: 'Invalid OTP' });
+    const hashedPassword = await hashing(password);
+    await userRepo.findAndUpdateDocument({ _id: user._id }, { password: hashedPassword });
+    await del(`forgot_password_${email}`);
+
+    return { message: 'Password reset successfully' };
+};

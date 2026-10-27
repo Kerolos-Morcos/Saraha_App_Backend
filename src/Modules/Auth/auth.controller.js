@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import { registerUserService, loginUserService, refreshTokenService, googleLoginService, googleRegisterService, logoutUserService, confirmEmailService } from './auth.service.js';
-import { loginSchema, registerSchema } from './auth.validation.js';
+import { registerUserService, loginUserService, refreshTokenService, googleLoginService, googleRegisterService, logoutUserService, confirmEmailService, resendOTPService, forgotPasswordService, resetPasswordService } from './auth.service.js';
+import { confirmEmailSchema, emailSchema, loginSchema, registerSchema, resetPasswordSchema } from './auth.validation.js';
 import { validation } from '../../Middlewares/validation.middleware.js';
 import { BadRequestException } from '../../Common/Utils/Errors/exception.error.js';
 import { authenticate } from '../../Middlewares/authentication.middleware.js';
@@ -52,11 +52,31 @@ authController.post('/logout', authenticate, decodeRefreshToken, async (req, res
 });
 
 // Confirm Email Route
-authController.patch('/confirm-email', async (req, res) => {
-    const { email, otp } = req.body;
-    if (!email || !otp) throw new BadRequestException({ message: 'Email or OTP is missing' });
-    const result = await confirmEmailService(email, otp.toString());
-    res.status(200).json({ message: 'Email confirmed successfully', data: result });
+authController.patch('/confirm-email', validation(confirmEmailSchema), async (req, res) => {
+    const { email, otp } = req.result;
+    await confirmEmailService(email, otp.toString());
+    res.status(200).json({ message: 'Email confirmed successfully' });
+});
+
+// Resend OTP Route
+authController.post('/resend-otp', validation(emailSchema), async (req, res) => {
+    const { email } = req.result;
+    const result = await resendOTPService(email);
+    res.status(200).json(result);
+});
+
+// Forgot Password Route
+authController.post('/forgot-password', validation(emailSchema), async (req, res) => {
+    const { email } = req.result;
+    const result = await forgotPasswordService(email);
+    res.status(200).json(result);
+})
+
+// Reset Password Route
+authController.post('/reset-password', validation(resetPasswordSchema), async (req, res) => {
+    const { email, otp, password } = req.result;
+    const result = await resetPasswordService({ email, otp, password });
+    res.status(200).json(result);
 });
 
 export default authController;
