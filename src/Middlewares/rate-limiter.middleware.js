@@ -20,7 +20,7 @@ export const createRateLimiter = () => rateLimit({
         let max;
         switch (data.countryCode) {
             case 'EG':
-                max = 10;
+                max = 3;
                 break;
             case 'US':
                 max = 5;
