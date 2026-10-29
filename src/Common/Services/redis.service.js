@@ -20,6 +20,11 @@ export const ttl = async (key) => {
     return await redisClient.ttl(key);
 };
 
+// Increment
+export const incr = async (key) => {
+    return await redisClient.incr(key);
+};
+
 // Expiration "Seconds"
 export const expire = async (key, expiration) => {
     await redisClient.expire(key, expiration);

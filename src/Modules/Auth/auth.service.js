@@ -6,7 +6,7 @@ import { hashing, verifying } from "../../Common/Utils/Security/hash.security.js
 import { decodeToken, generateToken } from "../../Common/Utils/token.utils.js";
 import { providersEnum, tokenTypeEnum } from "../../Common/constants.js";
 import { OAuth2Client } from "google-auth-library";
-import { calculateTTL, del, get, set } from "../../Common/Services/redis.service.js";
+import { calculateTTL, del, expire, get, incr, set } from "../../Common/Services/redis.service.js";
 import { handlingOTP } from "../../Common/Utils/otp.utils.js";
 
 // Repo
@@ -45,9 +45,31 @@ export const loginUserService = async (body) => {
     const { email, password } = body;
     const user = await userRepo.findOneDocument({ email, provider: providersEnum.SYSTEM });
     if (!user) throw new Error('User not found');
+    // Check if user is blocked
+    const blockKey = `login_block_${user._id}`;
+    const attemptsKey = `login_attempts_${user._id}`;
+    const isBlocked = await get(blockKey);
+    if (isBlocked) throw new BadRequestException("Bad Request", "User is blocked", "USER_BLOCKED");
     // Verify the password
     const isMatch = await verifying(user.password, password);
-    if (!isMatch) throw new BadRequestException("Bad Request", "Invalid email or password", "INVALID_CREDENTIALS");
+    if (!isMatch) {
+        // Increment login attempts
+        const attempts = await incr(attemptsKey);
+        if (attempts === 1) {
+            await expire(attemptsKey, 120);
+        }
+        if (attempts >= 5) {
+            await set(blockKey, "1", { EX: 300 });
+            await del(attemptsKey);
+            throw new BadRequestException("Bad Request", "User is blocked", "USER_BLOCKED");
+        }
+        throw new BadRequestException("Bad Request", "Invalid email or password", "INVALID_CREDENTIALS");
+    }
+    await del(attemptsKey);
+    if (user.isTwoFactorEnabled) {
+        await handlingOTP(email, user.firstName, 'two_factor_login');
+        return { message: '2FA verification required', requiresTwoFactor: true };
+    }
     const { accessToken, refreshToken } = buildTokens(user);
 
     return { user, accessToken, refreshToken };
@@ -180,3 +202,48 @@ export const resetPasswordService = async (body) => {
 
     return { message: 'Password reset successfully' };
 };
+
+// Send 2FA OTP
+export const sendTwoFactorAuthService = async (email) => {
+    const user = await userRepo.findUserByEmail(email);
+    if (!user) throw new BadRequestException({ message: 'User not found' });
+    if (user.isTwoFactorEnabled) throw new BadRequestException({ message: '2FA already enabled' });
+    await handlingOTP(email, user.firstName, 'two_factor_auth');
+
+    return { message: '2FA OTP sent successfully' };
+}
+
+// Enable 2FA
+export const enableTwoFactorAuthService = async (email, otp) => {
+    const user = await userRepo.findUserByEmail(email);
+    if (!user) throw new BadRequestException({ message: 'User not found' });
+    if (user.isTwoFactorEnabled) throw new BadRequestException({ message: '2FA already enabled' });
+    const hashedOTP = await get(`two_factor_auth_${email}`);
+    if (!hashedOTP) throw new BadRequestException({ message: 'OTP has expired or already used' });
+    const verifyingOTP = await verifying(hashedOTP, otp.toString());
+    if (!verifyingOTP) throw new BadRequestException({ message: 'Invalid OTP' });
+    const updatedUser = await userRepo.findAndUpdateDocument({ _id: user._id }, { isTwoFactorEnabled: true });
+    if (!updatedUser) throw new BadRequestException({ message: 'User not found' });
+    await del(`two_factor_auth_${email}`);
+
+    return { message: '2FA enabled successfully' };
+}
+
+// Verify 2FA OTP
+export const verifyTwoFactorLoginService = async (email, otp) => {
+    const user = await userRepo.findUserByEmail(email);
+    if (!user) throw new BadRequestException({ message: 'User not found' });
+    if (!user.isTwoFactorEnabled) throw new BadRequestException({ message: '2FA not enabled' });
+    const hashedOTP = await get(`two_factor_login_${email}`);
+    if (!hashedOTP) throw new BadRequestException({ message: 'OTP has expired or already used' });
+    const verifyingOTP = await verifying(hashedOTP, otp.toString());
+    if (!verifyingOTP) throw new BadRequestException({ message: 'Invalid OTP' });
+    await del(`two_factor_login_${email}`);
+
+    const { accessToken, refreshToken } = buildTokens(user);
+
+    console.log('Redis OTP exists:', !!hashedOTP);
+    console.log('OTP verification:', verifyingOTP);
+
+    return { message: 'Login successful', accessToken, refreshToken, user };
+}

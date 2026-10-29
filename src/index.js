@@ -8,19 +8,24 @@ import { globalErrorHandler } from "./Middlewares/global-error-handler.middlewar
 import cors from 'cors';
 import { redisConnection } from "./Common/Clients/redis.client.js";
 import { emailTransporter } from "./Common/Clients/email.client.js";
-import { sendEmailService } from "./Common/Services/email.service.js";
-import { verifying } from "./Common/Utils/Security/hash.security.js";
+import helmet from "helmet";
+import { createRateLimiter } from "./Middlewares/rate-limiter.middleware.js";
 
 const app = express();
 const port = envConfig.server.PORT || 5011;
-const whitelist = envConfig.server.CORS_WHITELIST.split(",").map(origin => origin.trim());
-app.use(cors({ origin: whitelist }), express.json());
 
 // DB Connection - Redis Connection
 dbConnection();
-redisConnection();
+await redisConnection();
+
+const whitelist = envConfig.server.CORS_WHITELIST.split(",").map(origin => origin.trim());
+app.use(cors({ origin: whitelist }), express.json(), helmet(), createRateLimiter());
 
 // Routes
+app.use("/home", (req, res) => {
+    res.send("Route is reachable!");
+    // console.log(req.rateLimitInfo);
+});
 app.use('/api/auth', authController);
 app.use('/api/users', userController);
 app.use('/api/messages', messageController);

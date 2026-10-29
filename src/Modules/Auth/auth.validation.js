@@ -5,6 +5,12 @@ export const emailSchema = z.strictObject({
     lang: z.enum(['en', 'ar']).default('en').optional() //params
 });
 
+export const OTPSchema = z.strictObject({
+    otp: z.coerce.string().regex(/^\d{6}$/, {
+        error: "OTP must contain exactly 6 digits"
+    })
+});
+
 export const loginSchema = emailSchema.extend({
     password: z.string().regex(/^(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/),
 });
@@ -25,9 +31,7 @@ export const registerSchema = loginSchema.extend({
 );
 
 export const confirmEmailSchema = emailSchema.extend({
-    otp: z.coerce.string().regex(/^\d{6}$/, {
-        error: "OTP must contain exactly 6 digits"
-    })
+    ...OTPSchema.shape
 });
 
 export const resetPasswordSchema = confirmEmailSchema.extend({

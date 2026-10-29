@@ -30,6 +30,12 @@ export class ForbiddenException extends HttpAppError {
     }
 }
 
+export class TooManyRequestsException extends HttpAppError {
+    constructor(message = "Too Many Requests", data = {}, code = "TOO_MANY_REQUESTS") {
+        super(message, 429, data, code)
+    }
+}
+
 export class InternalServerErrorException extends HttpAppError {
     constructor(message = "Internal Server Error", data = {}, code = "INTERNAL_SERVER_ERROR") {
         super(message, 500, data, code)
