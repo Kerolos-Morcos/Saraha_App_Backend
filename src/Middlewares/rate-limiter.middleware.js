@@ -11,27 +11,28 @@ function getIPDetails(ip) {
 // console.log(await getIPDetails("38.0.101.76"));
 
 export const createRateLimiter = () => rateLimit({
-    windowMs: 1 * 60 * 1000,
+    windowMs: 60 * 1000,
+    limit: 100,
     // limit: 2,
-    limit: async (req) => {
-        if (!req.headers['x-forwarded-for']) return 2;
-        const { data } = await getIPDetails(req.headers['x-forwarded-for']);
-        // console.log({ Ip_data: data, countryCode: data.countryCode });
-        let max;
-        switch (data.countryCode) {
-            case 'EG':
-                max = 3;
-                break;
-            case 'US':
-                max = 5;
-                break;
-            default:
-                max = 2;
-                break;
-        }
-        return max;
-        // return data;
-    },
+    // limit: async (req) => {
+    //     if (!req.headers['x-forwarded-for']) return 2;
+    //     const { data } = await getIPDetails(req.headers['x-forwarded-for']);
+    //     // console.log({ Ip_data: data, countryCode: data.countryCode });
+    //     let max;
+    //     switch (data.countryCode) {
+    //         case 'EG':
+    //             max = 3;
+    //             break;
+    //         case 'US':
+    //             max = 5;
+    //             break;
+    //         default:
+    //             max = 2;
+    //             break;
+    //     }
+    //     return max;
+    //     // return data;
+    // },
     standardHeaders: true,
     legacyHeaders: false,
     // ipv6Subnet: 56, 

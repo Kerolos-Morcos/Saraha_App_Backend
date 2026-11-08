@@ -13,7 +13,7 @@ export const sendMessageService = async ({ content, file, receiverId, senderId }
     const result = message.toObject();
     delete result.senderId;
 
-    return message;
+    return result;
 };
 
 // Get All Messages Service

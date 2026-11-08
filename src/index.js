@@ -11,6 +11,7 @@ import { emailTransporter } from "./Common/Clients/email.client.js";
 import helmet from "helmet";
 import { createRateLimiter } from "./Middlewares/rate-limiter.middleware.js";
 import identityRequestController from "./Modules/Message/identityRequest.controller.js";
+import conversationController from "./Modules/Message/conversation.controller.js";
 
 const app = express();
 const port = envConfig.server.PORT || 5011;
@@ -27,10 +28,12 @@ app.use("/home", (req, res) => {
     res.send("Route is reachable!");
     // console.log(req.rateLimitInfo);
 });
+
 app.use('/api/auth', authController);
 app.use('/api/users', userController);
 app.use('/api/messages', messageController);
 app.use('/api/identity-requests', identityRequestController);
+app.use('/api/conversations', conversationController);
 app.use('/uploads', express.static('uploads')); // For Static Files & Images
 
 // Not Found Middleware
