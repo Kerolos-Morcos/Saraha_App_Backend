@@ -12,11 +12,11 @@ messageController.get('/health', (req, res) => {
 });
 
 // Send Message Route
-messageController.post('/send', multerUpload({ desiredPath: 'messages' }).single('file'), async (req, res) => {
+messageController.post('/send', authenticate, multerUpload({ desiredPath: 'messages' }).single('file'), async (req, res) => {
     const { content, receiverId } = req.body;
     const file = req.file;
     if (!content && !file) throw new BadRequestException({ message: 'Message content or file is required' });
-    const result = await sendMessageService({ content, file, receiverId });
+    const result = await sendMessageService({ content, file, receiverId, senderId: req.authUser._id });
     res.status(201).json({ message: 'Message sent successfully', data: result });
 });
 

@@ -5,11 +5,14 @@ import UserRepository from "../../DB/Repositories/user.repository.js";
 const messageRepo = new MessageRepository();
 const userRepo = new UserRepository();
 // Send Message Service
-export const sendMessageService = async ({ content, file, receiverId }) => {
+export const sendMessageService = async ({ content, file, receiverId, senderId }) => {
     // Check if receiver exists
     const user = await userRepo.findDocumentById(receiverId);
-    if (!user) throw new BadRequestException('Receiver not found');
-    const message = await messageRepo.createDocument({ content, file: file?.path, receiverId });
+    if (!user) throw new BadRequestException({ message: 'Receiver not found' });
+    const message = await messageRepo.createDocument({ content, file: file?.path, receiverId, senderId });
+    const result = message.toObject();
+    delete result.senderId;
+
     return message;
 };
 
@@ -21,6 +24,6 @@ export const getAllMessagesService = async () => {
 
 // Get Messages by Receiver ID Service
 export const getMessagesByReceiverIdService = async (receiverId) => {
-    const messages = await messageRepo.findMessagesByReceiverId({ receiverId }).populate('receiverId', 'firstName lastName');
+    const messages = await messageRepo.findMessagesByReceiverId({ receiverId }, { senderId: 0 }).populate('receiverId', 'firstName lastName');
     return messages;
 };
